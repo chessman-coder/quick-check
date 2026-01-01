@@ -19,7 +19,6 @@ class WelcomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16, color: Color(0xFF5597FF), letterSpacing: 6),
             ),
           ],
-
           // child: Text(
           //   'Attendance Tracker',
           //   style: TextStyle(fontSize: 16, color: Color(0xFF5597FF)),
