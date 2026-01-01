@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter_project/ui/attendance_tracker/home/class_list.dart';
 import 'package:flutter_project/ui/attendance_tracker/home/main_home.dart';
 // import 'package:flutter_project/ui/attendance_tracker/welcome.dart';
 
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
-      home: const MainHome(),
+      home: const Home(),
     );
   }
 }
