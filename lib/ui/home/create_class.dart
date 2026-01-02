@@ -11,13 +11,8 @@ class _CreateClassState extends State<CreateClass> {
   // Controllers to manage input fields
   final TextEditingController classNameController = TextEditingController();
   final TextEditingController totalStudentsController = TextEditingController();
-  final TextEditingController student1Controller = TextEditingController();
-  final TextEditingController student2Controller = TextEditingController();
-  final TextEditingController student3Controller = TextEditingController();
-  final TextEditingController student4Controller = TextEditingController();
-  final TextEditingController student5Controller = TextEditingController();
-  final TextEditingController student6Controller = TextEditingController();
-
+  List<TextEditingController> studentController = [];
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +77,7 @@ class _CreateClassState extends State<CreateClass> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 50,
+                                  horizontal: 12,
                                   vertical: 10,
                                 ),
                               ),
@@ -103,10 +98,13 @@ class _CreateClassState extends State<CreateClass> {
                             TextField(
                               controller: totalStudentsController,
                               keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                _generateStudentFields(int.tryParse(value) ?? 0);
+                              },
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 5,
+                                  horizontal: 12,
                                   vertical: 10,
                                 ),
                               ),
@@ -118,12 +116,11 @@ class _CreateClassState extends State<CreateClass> {
                   ),
                   const SizedBox(height: 25),
 
-                  _buildStudentField('Student 1 Name', student1Controller),
-                  _buildStudentField('Student 2 Name', student2Controller),
-                  _buildStudentField('Student 3 Name', student3Controller),
-                  _buildStudentField('Student 4 Name', student4Controller),
-                  _buildStudentField('Student 5 Name', student5Controller),
-                  _buildStudentField('Student 6 Name', student6Controller),
+                  //gnr stu fields
+                  ...List.generate(
+                    studentController.length,
+                    (index) => _buildStudentField('Student ${index + 1} Name', studentController[index]),
+                  ),
 
                   const SizedBox(height: 25),
 
@@ -132,9 +129,19 @@ class _CreateClassState extends State<CreateClass> {
                       onPressed: () {
                         String className = classNameController.text;
                         String totalStudents = totalStudentsController.text;
-                        print('Class Name: $className');
-                        print('Total Students: $totalStudents');
+
+                      List<String> studentNames = [];
+                      for (var controller in studentController) {
+                        if (controller.text.isNotEmpty) {
+                          studentNames.add(controller.text);
+                        }
+                      }
+
+                      print('Class Name: $className');
+                      print('Total Students: $totalStudents');
+                      print('Student Names: $studentNames');
                       },
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4976FF),
                         padding: const EdgeInsets.symmetric(
@@ -155,9 +162,9 @@ class _CreateClassState extends State<CreateClass> {
                 ],
               ),
             ),
-          ),
-        ],
-      ),
+            ),
+            ],
+            ),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
@@ -171,7 +178,20 @@ class _CreateClassState extends State<CreateClass> {
     );
   }
 
-  // Helper method to build student fields
+  //gnr stu field base on total count
+  void _generateStudentFields(int count) { 
+    setState(() {
+      //then dispose all controllers
+      for (var controller in studentController){
+        controller.dispose();
+      }
+      //create new controllers base on count
+      studentController = List.generate(
+        count, (index) => TextEditingController(),
+      );
+    });
+  }
+
   Widget _buildStudentField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -199,12 +219,9 @@ class _CreateClassState extends State<CreateClass> {
   void dispose() {
     classNameController.dispose();
     totalStudentsController.dispose();
-    student1Controller.dispose();
-    student2Controller.dispose();
-    student3Controller.dispose();
-    student4Controller.dispose();
-    student5Controller.dispose();
-    student6Controller.dispose();
-    super.dispose();
+   for (var controller in studentController) {
+    controller.dispose();
+   }
+   super.dispose();
   }
 }

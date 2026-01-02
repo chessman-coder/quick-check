@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_project/ui/attendance_tracker/home/class_list.dart';
+import 'package:flutter_project/ui/home/class_list.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
