@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 //import 'package:flutter_project/ui/attendance_tracker/home/class_list.dart';
 // import 'package:flutter_project/ui/attendance_tracker/home/main_home.dart';
 // import 'package:flutter_project/ui/attendance_tracker/welcome.dart';
-import 'package:flutter_project/ui/home/create_class.dart';
+//import 'package:flutter_project/ui/home/create_class.dart';
+import 'package:flutter_project/ui/search screen/search_screen1.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       //home: const Home(),
-      home: const CreateClass(),
+      //home: const CreateClass(),
+      home: const SearchScreen(),
       //home: const ClassList(),
     );
   }
