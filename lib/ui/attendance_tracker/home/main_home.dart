@@ -10,12 +10,28 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
+  DateTime _selectedData = DateTime.now();
+
+  Future<void> _selectData(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2025),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null && picked != _selectedData) {
+      setState(() {
+        _selectedData = picked;
+      });
+    }
+  }
 
   void _onTapItem(int index) {
     setState(() {
       _currentIndex = index;
     });
   }
+
+  void _onCreate() {}
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +40,27 @@ class _HomeState extends State<Home> {
         title: Image.asset('assets/quickcheck1.png'),
         backgroundColor: Color(0xFF4976FF),
       ),
-      body: IndexedStack(index: _currentIndex, children: [
-        ClassList()
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          ClassList(
+            selectedDate: _selectedData,
+            onSelectDate: () => _selectData(context),
+          ),
         ],
       ),
-
+      floatingActionButton: _currentIndex == 0
+          ? Container(
+              margin: const EdgeInsets.only(right: 20, bottom: 20),
+              width: 60,
+              height: 60,
+              child: FloatingActionButton(
+                onPressed: _onCreate,
+                backgroundColor: Color(0xFF4976FF),
+                child: const Icon(Icons.add, color: Colors.white, size: 42),
+              ),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
