@@ -12,4 +12,4 @@ class Attendance {
   });
 }
 
-enum AttendanceStatus { present, absent }
+enum AttendanceStatus { present, absent, late }
