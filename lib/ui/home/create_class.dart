@@ -48,7 +48,7 @@ class _CreateClassState extends State<CreateClass> {
                   child: Text(
                     'Create Class',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
