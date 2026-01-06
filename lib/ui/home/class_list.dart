@@ -47,7 +47,7 @@ class ClassTile extends StatelessWidget {
     return ListTile(
       title: Text(
         classroom.name,
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }
