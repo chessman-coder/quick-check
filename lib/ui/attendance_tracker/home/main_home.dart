@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_project/data/class_data_testing.dart';
+import 'package:flutter_project/models/class.dart';
 import 'package:flutter_project/ui/attendance_tracker/home/class_list.dart';
 
 class Home extends StatefulWidget {
@@ -31,7 +33,82 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _onCreate() {}
+  void _onCreate() {
+    _showCreateClassDialog(context);
+  }
+
+  void _showCreateClassDialog(BuildContext context) {
+    final TextEditingController classNameController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create Class'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: classNameController,
+              decoration: const InputDecoration(
+                labelText: 'Class Name',
+                hintText: 'Enter class name',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter a class name';
+                }
+                if (value.trim().length < 2) {
+                  return 'Class name must be at least 2 characters';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  final String className = classNameController.text.trim();
+                  _createClass(className);
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Class "$className" created successfully!'),
+                      backgroundColor: const Color(0xFF4CAF50),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4976FF),
+              ),
+              child: const Text('Create', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _createClass(String className) {
+    // Generate a unique ID for the new class
+    final String newId = 'a${classDataList.length + 1}';
+    final Class newClass = Class(id: newId, name: className);
+    
+    setState(() {
+      classDataList.add(newClass);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
