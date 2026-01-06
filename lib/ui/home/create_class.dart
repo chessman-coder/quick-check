@@ -179,17 +179,30 @@ class _CreateClassState extends State<CreateClass> {
   }
 
   // Generate student fields based on total count
-  void _generateStudentFields(int count) { 
+  void _generateStudentFields(int count) {
+    // Keep a reference to the current controllers
+    final List<TextEditingController> oldControllers = studentController;
+
+    // Build a new list, reusing existing controllers where possible
+    final List<TextEditingController> newControllers = List.generate(
+      count,
+      (index) => index < oldControllers.length
+          ? oldControllers[index]
+          : TextEditingController(),
+    );
+
+    // Controllers beyond the new count are no longer needed and can be disposed
+    final List<TextEditingController> toDispose =
+        oldControllers.length > count ? oldControllers.sublist(count) : const [];
+
     setState(() {
-      // Then dispose all controllers
-      for (var controller in studentController){
-        controller.dispose();
-      }
-      // Create new controllers based on count
-      studentController = List.generate(
-        count, (index) => TextEditingController(),
-      );
+      studentController = newControllers;
     });
+
+    // Dispose controllers that are no longer used by any TextField
+    for (final controller in toDispose) {
+      controller.dispose();
+    }
   }
 
   Widget _buildStudentField(String label, TextEditingController controller) {
