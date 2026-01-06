@@ -107,7 +107,7 @@ class AttendanceScreen extends StatelessWidget {
             const SizedBox(height: 10),
             const Divider(color: Color(0xFF5597FF), thickness: 2, height: 1),
             Expanded(child: content),
-            const Divider(color: Color(0xFF5597FF), thickness: 2, height: 1,),
+            const Divider(color: Color(0xFF5597FF), thickness: 2, height: 1),
           ],
         ),
       ),
@@ -139,34 +139,49 @@ class _StudentTileState extends State<StudentTile> {
             style: const TextStyle(fontSize: 16),
           ),
           const Spacer(),
-          Row(
-            children: [
-              _buildStatusButton(
-                status: 'present',
-                color: const Color(0xFF4CAF50),
-                child: const Icon(Icons.check, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 8),
-              _buildStatusButton(
-                status: 'absent',
-                color: const Color(0xFFF44336),
-                child: const Icon(Icons.close, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 8),
-              _buildStatusButton(
-                status: 'late',
-                color: const Color(0xFFFF9800),
-                child: const Text(
-                  '!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.none,
+
+          SizedBox(
+            width: 120,
+            child: _selectedStatus != null
+                ? _buildStatusText()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      _buildStatusButton(
+                        status: 'present',
+                        color: const Color(0xFF4CAF50),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildStatusButton(
+                        status: 'absent',
+                        color: const Color(0xFFF44336),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildStatusButton(
+                        status: 'late',
+                        color: const Color(0xFFFF9800),
+                        child: const Text(
+                          '!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -178,8 +193,6 @@ class _StudentTileState extends State<StudentTile> {
     required Color color,
     required Widget child,
   }) {
-    final isSelected = _selectedStatus == status;
-
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -192,9 +205,48 @@ class _StudentTileState extends State<StudentTile> {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(6),
-          border: isSelected ? Border.all(color: Colors.black, width: 2) : null,
         ),
         child: Center(child: child),
+      ),
+    );
+  }
+
+  Widget _buildStatusText() {
+    Color textColor = Colors.black;
+    String displayText = '';
+
+    switch (_selectedStatus) {
+      case 'present':
+        textColor = const Color(0xFF4CAF50);
+        displayText = 'Present';
+        break;
+      case 'absent':
+        textColor = const Color(0xFFF44336);
+        displayText = 'Absent';
+        break;
+      case 'late':
+        textColor = const Color(0xFFFF9800);
+        displayText = 'Late';
+        break;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedStatus = null;
+        });
+      },
+      child: Align(
+        alignment: Alignment.center,
+        child: Text(
+          displayText,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+            color: textColor,
+          ),
+        ),
       ),
     );
   }
