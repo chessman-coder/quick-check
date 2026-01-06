@@ -13,7 +13,7 @@ class ClassList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Opacity(opacity: 0.5, child: Image.asset('assets/logo2.png')),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
             'No Classes',
             style: TextStyle(
