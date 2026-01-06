@@ -162,9 +162,9 @@ class _CreateClassState extends State<CreateClass> {
                 ],
               ),
             ),
-            ),
-            ],
-            ),
+          ),
+        ],
+      ),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
