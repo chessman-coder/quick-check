@@ -41,7 +41,7 @@ class _CreateClassState extends State<CreateClass> {
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                   ),
                 ),
                 Expanded(
