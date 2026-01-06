@@ -130,16 +130,16 @@ class _CreateClassState extends State<CreateClass> {
                         String className = classNameController.text;
                         String totalStudents = totalStudentsController.text;
 
-                      List<String> studentNames = [];
-                      for (var controller in studentController) {
-                        if (controller.text.isNotEmpty) {
-                          studentNames.add(controller.text);
+                        List<String> studentNames = [];
+                        for (var controller in studentController) {
+                          if (controller.text.isNotEmpty) {
+                            studentNames.add(controller.text);
+                          }
                         }
-                      }
 
-                      print('Class Name: $className');
-                      print('Total Students: $totalStudents');
-                      print('Student Names: $studentNames');
+                        print('Class Name: $className');
+                        print('Total Students: $totalStudents');
+                        print('Student Names: $studentNames');
                       },
 
                       style: ElevatedButton.styleFrom(
