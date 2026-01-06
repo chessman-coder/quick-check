@@ -116,7 +116,7 @@ class _CreateClassState extends State<CreateClass> {
                   ),
                   const SizedBox(height: 25),
 
-                  //gnr stu fields
+                  // Generate student name input fields based on the total students count
                   ...List.generate(
                     studentController.length,
                     (index) => _buildStudentField('Student ${index + 1} Name', studentController[index]),
