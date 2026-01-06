@@ -178,14 +178,14 @@ class _CreateClassState extends State<CreateClass> {
     );
   }
 
-  //gnr stu field base on total count
+  // Generate student fields based on total count
   void _generateStudentFields(int count) { 
     setState(() {
-      //then dispose all controllers
+      // Then dispose all controllers
       for (var controller in studentController){
         controller.dispose();
       }
-      //create new controllers base on count
+      // Create new controllers based on count
       studentController = List.generate(
         count, (index) => TextEditingController(),
       );
