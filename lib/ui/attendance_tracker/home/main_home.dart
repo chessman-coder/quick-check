@@ -101,8 +101,8 @@ class _HomeState extends State<Home> {
   }
 
   void _createClass(String className) {
-    // Generate a unique ID for the new class
-    final String newId = 'a${classDataList.length + 1}';
+    // Generate a unique ID for the new class using timestamp
+    final String newId = 'a${DateTime.now().millisecondsSinceEpoch}';
     final Class newClass = Class(id: newId, name: className);
     
     setState(() {
