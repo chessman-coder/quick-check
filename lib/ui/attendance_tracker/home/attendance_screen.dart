@@ -1,30 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_project/data/student_data_testing.dart';
+import 'package:flutter_project/data/class_service.dart';
+import 'package:flutter_project/models/attendance.dart';
 import 'package:flutter_project/models/student.dart';
 
-class AttendanceScreen extends StatelessWidget {
+class AttendanceScreen extends StatefulWidget {
   final DateTime selectedDate;
-  final VoidCallback onSelectDate;
   final String classId;
   final String className;
 
   const AttendanceScreen({
     super.key,
     required this.selectedDate,
-    required this.onSelectDate,
     required this.classId,
     required this.className,
   });
 
   @override
+  State<AttendanceScreen> createState() => _AttendanceScreenState();
+}
+
+class _AttendanceScreenState extends State<AttendanceScreen> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.selectedDate;
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<Student> students = getStudentsByClassId(classId);
+    final List<Student> students = ClassService.getStudentsByClassId(
+      widget.classId,
+    );
     Widget content = ListView.separated(
       itemCount: students.length,
       separatorBuilder: (context, index) =>
           const Divider(color: Color(0xFF5597FF), thickness: 2, height: 1),
       itemBuilder: (context, index) {
-        return StudentTile(index: index + 1, student: students[index]);
+        return StudentTile(
+          key: ValueKey(
+            '${students[index].id}_${_selectedDate.toIso8601String()}',
+          ),
+          index: index + 1,
+          student: students[index],
+          selectedDate: _selectedDate,
+        );
       },
     );
 
@@ -48,7 +83,7 @@ class AttendanceScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '$className Attendance',
+                        '${widget.className} Attendance',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -65,10 +100,10 @@ class AttendanceScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   OutlinedButton.icon(
-                    onPressed: onSelectDate,
+                    onPressed: () => _selectDate(context),
                     icon: const Icon(Icons.calendar_today, size: 18),
                     label: Text(
-                      '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.black87,
@@ -118,8 +153,14 @@ class AttendanceScreen extends StatelessWidget {
 class StudentTile extends StatefulWidget {
   final int index;
   final Student student;
+  final DateTime selectedDate;
 
-  const StudentTile({super.key, required this.index, required this.student});
+  const StudentTile({
+    super.key,
+    required this.index,
+    required this.student,
+    required this.selectedDate,
+  });
 
   @override
   State<StudentTile> createState() => _StudentTileState();
@@ -127,6 +168,45 @@ class StudentTile extends StatefulWidget {
 
 class _StudentTileState extends State<StudentTile> {
   String? _selectedStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAttendance();
+  }
+
+  @override
+  void didUpdateWidget(StudentTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload attendance if date changes
+    if (oldWidget.selectedDate != widget.selectedDate) {
+      _loadAttendance();
+    }
+  }
+
+  void _loadAttendance() {
+    final attendance = ClassService.getAttendance(
+      widget.student.id,
+      widget.selectedDate,
+    );
+    setState(() {
+      _selectedStatus = attendance?.status.name;
+    });
+  }
+
+  void _markAttendance(String status) async {
+    final attendanceStatus = AttendanceStatus.values.firstWhere(
+      (e) => e.name == status,
+    );
+    await ClassService.markAttendance(
+      widget.student.id,
+      widget.selectedDate,
+      attendanceStatus,
+    );
+    setState(() {
+      _selectedStatus = status;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,9 +275,7 @@ class _StudentTileState extends State<StudentTile> {
   }) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedStatus = status;
-        });
+        _markAttendance(status);
       },
       child: Container(
         width: 32,
@@ -232,6 +310,7 @@ class _StudentTileState extends State<StudentTile> {
 
     return GestureDetector(
       onTap: () {
+        // Reset to show buttons again (user can re-select)
         setState(() {
           _selectedStatus = null;
         });

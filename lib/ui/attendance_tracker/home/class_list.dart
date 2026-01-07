@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_project/data/class_data_testing.dart';
-import 'package:flutter_project/data/student_data_testing.dart';
+import 'package:flutter_project/data/class_service.dart';
 import 'package:flutter_project/models/class.dart';
 import 'package:flutter_project/ui/attendance_tracker/home/attendance_screen.dart';
 
-class ClassList extends StatelessWidget {
+class ClassList extends StatefulWidget {
   final DateTime selectedDate;
   final VoidCallback onSelectDate;
 
@@ -13,6 +12,16 @@ class ClassList extends StatelessWidget {
     required this.selectedDate,
     required this.onSelectDate,
   });
+
+  @override
+  State<ClassList> createState() => _ClassListState();
+}
+
+class _ClassListState extends State<ClassList> {
+  Future<void> _deleteClass(String classId) async {
+    await ClassService.deleteClass(classId);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +44,58 @@ class ClassList extends StatelessWidget {
         ],
       ),
     );
-    if (classDataList.isNotEmpty) {
+    if (ClassService.classes.isNotEmpty) {
       content = ListView.builder(
-        itemCount: classDataList.length,
-        itemBuilder: (context, index) => ClassTile(
-          classroom: classDataList[index],
-          selectedDate: selectedDate,
-          onSelectDate: onSelectDate,
-        ),
+        itemCount: ClassService.classes.length,
+        itemBuilder: (context, index) {
+          final classroom = ClassService.classes[index];
+          return Dismissible(
+            key: ValueKey(classroom.id),
+            direction: DismissDirection.endToStart,
+            confirmDismiss: (direction) async {
+              return await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Delete Class'),
+                      content: Text(
+                        'Are you sure you want to delete "${classroom.name}"?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    ),
+                  ) ??
+                  false;
+            },
+            onDismissed: (direction) {
+              _deleteClass(classroom.id);
+            },
+            background: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              child: const Icon(Icons.delete, color: Colors.white, size: 32),
+            ),
+            child: ClassTile(
+              classroom: classroom,
+              selectedDate: widget.selectedDate,
+            ),
+          );
+        },
       );
     }
 
@@ -55,10 +108,10 @@ class ClassList extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               OutlinedButton.icon(
-                onPressed: onSelectDate,
+                onPressed: widget.onSelectDate,
                 icon: const Icon(Icons.calendar_today, size: 18),
                 label: Text(
-                  '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                  '${widget.selectedDate.day}/${widget.selectedDate.month}/${widget.selectedDate.year}',
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.black87,
@@ -84,17 +137,17 @@ class ClassTile extends StatelessWidget {
     super.key,
     required this.classroom,
     required this.selectedDate,
-    required this.onSelectDate,
   });
 
   final Class classroom;
   final DateTime selectedDate;
-  final VoidCallback onSelectDate;
 
   @override
   Widget build(BuildContext context) {
     // Get student count for this specific class
-    final int studentCount = getStudentsByClassId(classroom.id).length;
+    final int studentCount = ClassService.getStudentsByClassId(
+      classroom.id,
+    ).length;
 
     return GestureDetector(
       onTap: () {
@@ -103,7 +156,6 @@ class ClassTile extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => AttendanceScreen(
               selectedDate: selectedDate,
-              onSelectDate: onSelectDate,
               classId: classroom.id,
               className: classroom.name,
             ),

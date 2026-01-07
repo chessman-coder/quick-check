@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_project/data/class_service.dart';
 
 class CreateClass extends StatefulWidget {
   const CreateClass({super.key});
@@ -8,233 +9,275 @@ class CreateClass extends StatefulWidget {
 }
 
 class _CreateClassState extends State<CreateClass> {
-  // Controllers to manage input fields
-  final TextEditingController classNameController = TextEditingController();
-  final TextEditingController totalStudentsController = TextEditingController();
-  List<TextEditingController> studentController = [];
-  
+  final _formKey = GlobalKey<FormState>();
+  // default setting
+  static const defaultClassName = 'New Class';
+
+  final _classNameController = TextEditingController();
+  List<TextEditingController> studentControllers = [TextEditingController()];
+
+  void _addStudent() {
+    setState(() {
+      studentControllers.add(TextEditingController());
+    });
+  }
+
+  void _removeStudent(int index) {
+    if (studentControllers.length > 1) {
+      setState(() {
+        studentControllers[index].dispose();
+        studentControllers.removeAt(index);
+      });
+    }
+  }
+
+  void _createClass() async {
+    // Validate form
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    String className = _classNameController.text.trim();
+    List<String> studentNames = studentControllers
+        .map((c) => c.text.trim())
+        .where((name) => name.isNotEmpty)
+        .toList();
+
+    // Validate
+    if (className.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a class name')),
+      );
+      return;
+    }
+
+    if (studentNames.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add at least one student')),
+      );
+      return;
+    }
+
+    // Save to JSON file
+    await ClassService.createClass(className, studentNames);
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Class "$className" created with ${studentNames.length} students',
+        ),
+      ),
+    );
+
+    // Go back
+    Navigator.pop(context);
+  }
+
+  void onReset() {
+    _formKey.currentState!.reset();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _classNameController.text = defaultClassName;
+  }
+
+  @override
+  void dispose() {
+    _classNameController.dispose();
+    for (var controller in studentControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
+    return Material(
+      child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-            color: const Color(0xFF4976FF),
-            child: SafeArea(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Image.asset('assets/quickcheck1.png', height: 35),
-              ),
-            ),
-          ),
-
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.only(top: 15, left: 20, right: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.black),
-                    onPressed: () => Navigator.pop(context),
-                    padding: const EdgeInsets.all(20),
-                  ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(Icons.arrow_back, size: 32),
                 ),
                 Expanded(
                   child: Text(
                     'Create Class',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-
+          const SizedBox(height: 50),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 55),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Class Name',
-                              style: TextStyle(fontSize: 15),
-                            ),
-                            const SizedBox(height: 2),
-                            TextField(
-                              controller: classNameController,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Total Students',
-                              style: TextStyle(fontSize: 15),
-                            ),
-                            const SizedBox(height: 2),
-                            TextField(
-                              controller: totalStudentsController,
-                              keyboardType: TextInputType.number,
-                              onChanged: (value) {
-                                _generateStudentFields(int.tryParse(value) ?? 0);
-                              },
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 25),
-
-                  // Generate student name input fields based on the total students count
-                  ...List.generate(
-                    studentController.length,
-                    (index) => _buildStudentField('Student ${index + 1} Name', studentController[index]),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        String className = classNameController.text;
-                        String totalStudents = totalStudentsController.text;
-
-                        List<String> studentNames = [];
-                        for (var controller in studentController) {
-                          if (controller.text.isNotEmpty) {
-                            studentNames.add(controller.text);
-                          }
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Class Name Field
+                    const Text('Class Name', style: TextStyle(fontSize: 15)),
+                    const SizedBox(height: 2),
+                    TextFormField(
+                      controller: _classNameController,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Class name is required';
                         }
-
-                        print('Class Name: $className');
-                        print('Total Students: $totalStudents');
-                        print('Student Names: $studentNames');
+                        if (value.trim().length < 4) {
+                          return 'Class name must be more than 4 characters';
+                        }
+                        return null;
                       },
-
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4976FF),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 50,
-                          vertical: 20,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Text(
-                        'Create Class',
-                        style: TextStyle(color: Colors.white, fontSize: 15),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 25),
-                ],
+                    const SizedBox(height: 25),
+
+                    // Students Section Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Students (${studentControllers.length})',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: _addStudent,
+                          icon: const Icon(Icons.add, size: 20),
+                          label: const Text('Add Student'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF4976FF),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Student Fields
+                    ...List.generate(
+                      studentControllers.length,
+                      (index) => _buildStudentField(index),
+                    ),
+
+                    const SizedBox(height: 25),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: onReset,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4976FF),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 20,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        ElevatedButton(
+                          onPressed: _createClass,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4976FF),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 20,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: const Text(
+                            'Create Class',
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: const Color(0xFF4976FF),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Edit Class'),
-        ],
-      ),
     );
   }
 
-  // Generate student fields based on total count
-  void _generateStudentFields(int count) {
-    // Keep a reference to the current controllers
-    final List<TextEditingController> oldControllers = studentController;
-
-    // Build a new list, reusing existing controllers where possible
-    final List<TextEditingController> newControllers = List.generate(
-      count,
-      (index) => index < oldControllers.length
-          ? oldControllers[index]
-          : TextEditingController(),
-    );
-
-    // Controllers beyond the new count are no longer needed and can be disposed
-    final List<TextEditingController> toDispose =
-        oldControllers.length > count ? oldControllers.sublist(count) : const [];
-
-    setState(() {
-      studentController = newControllers;
-    });
-
-    // Dispose controllers that are no longer used by any TextField
-    for (final controller in toDispose) {
-      controller.dispose();
-    }
-  }
-
-  Widget _buildStudentField(String label, TextEditingController controller) {
+  Widget _buildStudentField(int index) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Row(
         children: [
-          Text(label, style: const TextStyle(fontSize: 15)),
-          const SizedBox(height: 2),
-          TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Student ${index + 1} Name',
+                  style: const TextStyle(fontSize: 15),
+                ),
+                const SizedBox(height: 2),
+                TextFormField(
+                  controller: studentControllers[index],
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Student name is required';
+                    }
+                    if (value.trim().length < 4) {
+                      return 'Name must be more than 4 characters';
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          if (studentControllers.length > 1)
+            IconButton(
+              onPressed: () => _removeStudent(index),
+              icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+            ),
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    classNameController.dispose();
-    totalStudentsController.dispose();
-   for (var controller in studentController) {
-    controller.dispose();
-   }
-   super.dispose();
   }
 }

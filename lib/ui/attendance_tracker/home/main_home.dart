@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_project/data/class_service.dart';
+import 'package:flutter_project/ui/attendance_tracker/edit/edit_class.dart';
 import 'package:flutter_project/ui/attendance_tracker/home/class_list.dart';
+import 'package:flutter_project/ui/attendance_tracker/home/create_class.dart';
+import 'package:flutter_project/ui/attendance_tracker/search%20screen/search_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -15,8 +19,8 @@ class _HomeState extends State<Home> {
   Future<void> _selectData(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      firstDate: DateTime(2025),
-      lastDate: DateTime(2030),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
     );
     if (picked != null && picked != _selectedData) {
       setState(() {
@@ -31,7 +35,14 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _onCreate() {}
+  void _onCreate() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CreateClass()),
+    );
+    // Refresh the UI after returning from CreateClass
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +55,16 @@ class _HomeState extends State<Home> {
         index: _currentIndex,
         children: [
           ClassList(
+            key: ValueKey('class_list_${ClassService.classes.length}'),
             selectedDate: _selectedData,
             onSelectDate: () => _selectData(context),
+          ),
+          SearchScreen(
+            selectedDate: _selectedData,
+            onSelectDate: () => _selectData(context),
+          ),
+          EditClassList(
+            key: ValueKey('edit_list_${ClassService.classes.length}'),
           ),
         ],
       ),

@@ -10,6 +10,20 @@ class Attendance {
     required this.date,
     required this.status,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'studentId': studentId,
+    'date': date.toIso8601String(),
+    'status': status.name,
+  };
+
+  factory Attendance.fromJson(Map<String, dynamic> json) => Attendance(
+    id: json['id'],
+    studentId: json['studentId'],
+    date: DateTime.parse(json['date']),
+    status: AttendanceStatus.values.firstWhere((e) => e.name == json['status']),
+  );
 }
 
 enum AttendanceStatus { present, absent, late }
