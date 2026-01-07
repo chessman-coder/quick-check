@@ -27,10 +27,6 @@ A simple and intuitive Flutter application for tracking student attendance acros
 - View which class each student belongs to
 - Quick navigation to attendance screen from search results
 
-## Screenshots
-
-*Add your app screenshots here*
-
 ## Tech Stack
 
 - **Framework**: Flutter
