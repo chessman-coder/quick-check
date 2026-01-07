@@ -287,7 +287,7 @@ class _EditClassFormState extends State<EditClassForm> {
                           if (value == null || value.trim().isEmpty) {
                             return 'Class name is required';
                           }
-                          if (value.trim().length <= 4) {
+                          if (value.trim().length < 4) {
                             return 'Class name must be more than 4 characters';
                           }
                           return null;
@@ -385,7 +385,7 @@ class _EditClassFormState extends State<EditClassForm> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Student name is required';
                     }
-                    if (value.trim().length <= 4) {
+                    if (value.trim().length < 4) {
                       return 'Name must be more than 4 characters';
                     }
                     return null;
