@@ -3,6 +3,7 @@ import 'package:flutter_project/data/class_service.dart';
 import 'package:flutter_project/models/class.dart';
 import 'package:flutter_project/models/student.dart';
 import 'package:flutter_project/ui/attendance_tracker/home/attendance_screen.dart';
+import 'package:flutter_project/ui/attendance_tracker/search screen/history_attendance.dart';
 
 class SearchScreen extends StatefulWidget {
   final DateTime selectedDate;
@@ -273,11 +274,8 @@ class _StudentResultTile extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AttendanceScreen(
-              selectedDate: selectedDate,
-              classId: student.classId,
-              className: className,
-            ),
+            builder: (context) =>
+                AttendanceHistory(student: student, className: className),
           ),
         );
       },
