@@ -124,7 +124,7 @@ This project is for educational purposes at Cambodia Academy of Digital Technolo
 
 ## Author
 
-**1. Chessman OL**  
+**1. Chessman OL(Ly Dara)**  
 **2. Vorn Naratheany**
 
 Mobile Development - Year 3, Term 1  
